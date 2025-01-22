@@ -1,11 +1,5 @@
 from django.db import models
 
-class User(models.Model):
-    username = models.CharField(max_length=20)
-    email_id = models.EmailField(max_length=254)
-    password = models.CharField(max_length=255)
-    date_joined = models.DateTimeField(null=True)
-
 class Habit(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     habit_name = models.CharField(max_length=255)
