@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'habit_models',
     'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
