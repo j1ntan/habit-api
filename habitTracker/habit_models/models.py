@@ -14,10 +14,9 @@ class Habit(models.Model):
     ], default='daily')
     good_habit = models.BooleanField(default=True)
     goal = models.IntegerField()
-    color = models.CharField(max_length=20, blank=True, null=True)
 
 class HabitProgress(models.Model):
-    habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="progress_track")
     date = models.DateField()
     completed = models.BooleanField(default=False)
     completion_percentage = models.IntegerField(default=0)
