@@ -1,13 +1,12 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
 from .views import *
 
+router = DefaultRouter()
+router.register(r'auth', AuthenticationViewSet, basename='auth')
+
 urlpatterns = [
-    path('auth/signup', signup),
-    path('auth/login', login)
+    path('', include(router.urls)),
+    path('auth/logout', logoutAPI.as_view())
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # For Token Auth
-    ],
-}
