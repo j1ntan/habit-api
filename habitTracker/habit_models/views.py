@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from .serializers import *
 from .models import *
 from rest_framework.viewsets import ViewSet
@@ -68,12 +67,12 @@ class AuthenticationViewSet(ViewSet):
     @action(detail=False, methods=['post'])
     def signup(self, request):
         if request.data['password'] != request.data['retype_password']:
-            return Response(status = 400, data = "Error: password and retype_password don't match!")
+            return Response(status = 400, data = {"error" : "password and retype_password don't match!"})
         try:
             user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'])
             return Response(status = 201, data = "Successful!")
         except db.utils.IntegrityError:
-            return Response(status = 422, data = "Error: username already exists!")
+            return Response(status = 422, data = {"error": "username already exists!"})
 
 class logoutAPI(APIView):
     permission_classes = [IsAuthenticated]
