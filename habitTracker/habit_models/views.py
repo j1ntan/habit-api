@@ -141,11 +141,11 @@ class HabitViewSet(ViewSet):
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             try:
-                habit = Habit.objects.get(id=id)
+                habit = Habit.objects.get(id=id, user=user)
             except Habit.DoesNotExist:
                 return Response({
                     "status": False,
-                    "message": "Habit not found"
+                    "message": "Habit not found for the provided user."
                 })
             serializer = HabitSerializer(habit)
             return Response({
@@ -161,11 +161,11 @@ class HabitViewSet(ViewSet):
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             try:
-                habit = Habit.objects.get(id=id)
+                habit = Habit.objects.get(id=id, user=user)
             except Habit.DoesNotExist:
                 return Response({
                     "status": False,
-                    "message": "Habit not found"
+                    "message": "Habit not found for the provided user."
                 })
             habit.habit_name = request.data['name']
             habit.description = request.data['description']
@@ -187,11 +187,11 @@ class HabitViewSet(ViewSet):
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             try:
-                habit = Habit.objects.get(id=id)
+                habit = Habit.objects.get(id=id, user=user)
             except Habit.DoesNotExist:
                 return Response({
                     "status": False,
-                    "message": "Habit not found"
+                    "message": "Habit not found for the provided user."
                 })
             habit.delete()
             return Response({
@@ -226,11 +226,11 @@ class HabitProgressViewSet(ViewSet):
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             try:
-                habit = Habit.objects.get(id=id)
+                habit = Habit.objects.get(id=id, user=user)
             except Habit.DoesNotExist:
                 return Response({
                     "status": False,
-                    "message": "Habit not found"
+                    "message": "Habit not found for the given user."
                 })
             else:
                 habit_progress = HabitProgress.objects.get(habit=habit)
@@ -245,7 +245,7 @@ class HabitProgressViewSet(ViewSet):
                 streak.last_completed = date.today()                 
                 return Response({
                     "status": True,
-                    "message": "HabitProgress updated successfully",
+                    "message": "Habit progress updated successfully",
                     "data" : HabitProgressSerializer(habit_progress).data
                 })
     @action(detail=True, methods=['get'])
@@ -271,7 +271,7 @@ class HabitProgressViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            habit = Habit.objects.get(id=id)
+            habit = Habit.objects.get(id=id, user=user)
             progress =  HabitProgress.objects.get(habit=habit)
             serializer = HabitProgressSerializer(progress)
             return Response({
