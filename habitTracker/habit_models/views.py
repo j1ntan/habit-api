@@ -278,5 +278,4 @@ class HabitProgressViewSet(ViewSet):
                 "status" : True,
                 "data" : serializer.data
             })
-    
-        
+
