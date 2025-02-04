@@ -75,7 +75,7 @@ class AuthenticationViewSet(ViewSet):
             user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'], first_name = request.data['first_name'])
             return Response(status = 201, data = "Successful!")
         except db.utils.IntegrityError:
-            return Response(data = {"error": "username already exists!"})
+            return Response(status = 422, data = {"error": "username already exists!"})
 
 class logoutAPI(APIView):
     permission_classes = [IsAuthenticated]
