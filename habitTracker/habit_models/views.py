@@ -35,7 +35,10 @@ class AuthenticationViewSet(ViewSet):
             if user_obj:
                 return Response({
                     "status" : True,
-                    "data" : {'token' : str(Token.objects.get_or_create(user = user_obj)[0])}
+                    "data" : {'token' : str(Token.objects.get_or_create(user = user_obj)[0]),
+                              'name' : user_obj.first_name,
+                              'email' : user_obj.email,
+                              'username' : user_obj.username}
                 })
             return Response({
                 "status" : False,
@@ -69,7 +72,7 @@ class AuthenticationViewSet(ViewSet):
         if request.data['password'] != request.data['retype_password']:
             return Response(status = 400, data = {"error" : "password and retype_password don't match!"})
         try:
-            user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'])
+            user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'], first_name = request.data['first_name'])
             return Response(status = 201, data = "Successful!")
         except db.utils.IntegrityError:
             return Response(status = 422, data = {"error": "username already exists!"})
@@ -233,11 +236,12 @@ class HabitProgressViewSet(ViewSet):
                     "message": "Habit not found for the given user."
                 })
             else:
-                habit_progress = HabitProgress.objects.get(habit=habit)
-                habit_progress.date = request.data['date']
-                habit_progress.completion_percentage = request.data['completion_percentage']
-                habit_progress.save()
-                streak = Streak.objects.get(user = user, habit=habit)
+                habit_progress = HabitProgress.objects.create(habit=habit, date = request.data['date'], completion_percentage = request.data['completion_percentage'])
+                if habit_progress.completion_percentage == 100:
+                    habit_progress.completed = True
+                else:
+                    habit_progress.completed = False
+                streak = Streak.objects.get(user = user, habit= habit)
                 if streak.last_completed == date.today() - timedelta(days=1):
                     streak.streak_count += 1
                 else:

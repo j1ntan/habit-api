@@ -7,19 +7,22 @@ class Habit(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(blank=True, null=True)
-    frequency = models.CharField(max_length=50, choices=[
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-    ], default='daily')
+    days = models.CharField(max_length=50, choices=[
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ], default='Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')
     good_habit = models.BooleanField(default=True)
-    goal = models.IntegerField()
+    goal = models.CharField(max_length=250, blank=True)
 
 class HabitProgress(models.Model):
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="progress_track")
-    date = models.DateField()
+    dates = models.JSONField(['2025-01-01', '2025-01-02'])
     completed = models.BooleanField(default=False)
-    completion_percentage = models.IntegerField(default=0)
 
 class Streak(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
