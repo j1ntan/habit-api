@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework import status
-from datetime import date, timedelta, strptime
+from datetime import date, timedelta, datetime
 
 # Create your views here.  
 class AuthenticationViewSet(ViewSet):
@@ -261,8 +261,8 @@ class HabitProgressViewSet(ViewSet):
                     streak.save()
                 
                 if habit_progress.completed:
-                    supplied_date = strptime(request.data['date'], "%Y-%m-%d")
-                    last_completed = strptime(streak.last_completed, "%Y-%m-%d")
+                    supplied_date = datetime.strptime(request.data['date'], "%Y-%m-%d")
+                    last_completed = datetime.strptime(streak.last_completed, "%Y-%m-%d")
                     if last_completed + timedelta(days=1) == supplied_date:
                         streak.streak_count += 1
                     else:
