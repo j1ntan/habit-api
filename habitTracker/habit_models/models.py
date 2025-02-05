@@ -21,8 +21,7 @@ class Habit(models.Model):
 
 class HabitProgress(models.Model):
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="progress_track")
-    dates = models.JSONField(['2025-01-01', '2025-01-02'])
-    completed = models.BooleanField(default=False)
+    completion_dates = models.JSONField(default=dict)
 
 class Streak(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
@@ -39,6 +38,6 @@ class Analytics(models.Model):
     worst_habit = models.ForeignKey(Habit, null = True, blank = True, on_delete = models.SET_NULL, related_name = "worst_habit_analytics")
 
 class Calender(models.Model):
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    habit = models.ForeignKey(Habit, on_delete = models.CASCADE)
     date = models.DateField()
-    completed_habits = models.ManyToManyField(Habit)
+    completed = models.BooleanField(default = False)

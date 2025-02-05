@@ -15,3 +15,8 @@ class HabitProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = HabitProgress
         fields = '__all__'
+
+class StreakSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Streak
+        fields = '__all__'
