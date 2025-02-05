@@ -334,5 +334,32 @@ class CalenderViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            all_habits = Habit.objects.filter(user=user)
-            input_date = request.data['date']
+            #From the request, get the "start_date" and "end_date" attributes, and loop through each date in the range.
+            start_date = request.data['start_date']
+            end_date = request.data['end_date']
+            calender = []
+            for i in range((end_date - start_date).days + 1):
+                date = start_date + timedelta(days=i)
+                
+                #For this date, return all the habits that should be done on this day, and whether they were completed or not.
+                habits = Habit.objects.filter(user=user, days__contains=date.strftime("%A"))
+                habit_data = []
+                for habit in habits:
+                    habit_progress = HabitProgress.objects.get(habit=habit)
+                    habit_data.append({
+                        "habit_id": habit.id,
+                        "habit_name": habit.habit_name,
+                        "completed": date in habit_progress.completion_dates
+                    })                
+                calender.append({
+                    "date": date,
+                    "habits": habit_data
+                })
+            return Response({
+                "status": True,
+                "data": calender
+            })
+            
+            
+            
+            
