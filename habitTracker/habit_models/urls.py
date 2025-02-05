@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register(r'auth', AuthenticationViewSet, basename='auth')
 router.register(r'habits', HabitViewSet, basename='habits')
 router.register(r'habits', HabitProgressViewSet, basename='habit-progress')
+router.register(r'habits', CalenderViewSet, basename='calender')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -17,5 +18,6 @@ urlpatterns = [
     path('habits/<int:id>/delete', HabitViewSet.as_view({'delete':'deleteHabit'})),
     path('habits/<int:id>/track', HabitProgressViewSet.as_view({'post':'trackHabit'})),
     path('habits/progress', HabitProgressViewSet.as_view({'get':'showProgress'})),
-    path('habits/<int:id>/progress', HabitProgressViewSet.as_view({'get' : 'idProgress'}))
+    path('habits/<int:id>/progress', HabitProgressViewSet.as_view({'get' : 'idProgress'})),
+    path('habits/calendar', CalenderViewSet.as_view({'get':'showCalender'}))
 ]
