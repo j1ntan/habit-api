@@ -125,16 +125,16 @@ class HabitViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            new_habit = Habit(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], days=request.data['days'], goal=request.data['goal'], good_habit=request.data['good_habit'])
-            new_habit.save()
-            habit_progress = HabitProgress(habit = new_habit, completion_dates = [])
-            habit_progress.save()
-            streak_init = Streak(user=user, habit=new_habit)
-            streak_init.save()
-            return Response({
-                "status": True,
-                "data": HabitSerializer(new_habit).data
-            })
+            serializer = HabitSerializer(data=request.data)
+            if serializer.is_valid():
+                habit = serializer.save(user=user)
+                selected_days = request.data.get('days', [])
+                for day_id in selected_days:
+                    day = Day.objects.get(id=day_id)
+                    habit.days.add(day)
+                habit.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     @action(detail=True, methods=['get'])
     def fetchById(self, request, id):
         user = self.authorize(request)
