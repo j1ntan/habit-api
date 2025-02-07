@@ -58,6 +58,9 @@ MIDDLEWARE = [
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:5173'
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 ROOT_URLCONF = 'habitTracker.urls'
 
 TEMPLATES = [
