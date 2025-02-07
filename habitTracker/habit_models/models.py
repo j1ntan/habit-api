@@ -1,21 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Day(models.Model):
+    name = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.name
+
 class Habit(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     habit_name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.DateField(null=True)
     end_date = models.DateField(blank=True, null=True)
-    days = models.CharField(max_length=50, choices=[
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    ], default='Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')
+    days = models.ManyToManyField(Day)
     good_habit = models.BooleanField(default=True)
     goal = models.CharField(max_length=250, blank=True)
 
@@ -38,6 +36,11 @@ class Analytics(models.Model):
     worst_habit = models.ForeignKey(Habit, null = True, blank = True, on_delete = models.SET_NULL, related_name = "worst_habit_analytics")
 
 class Calender(models.Model):
-    habit = models.ForeignKey(Habit, on_delete = models.CASCADE)
+    habit = models.ForeignKey(Habit, on_delete = models.CASCADE, null=True, blank=True)
     date = models.DateField()
     completed = models.BooleanField(default = False)
+
+def create_days():
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    for day in days:
+        Day.objects.get_or_create(name=day)
