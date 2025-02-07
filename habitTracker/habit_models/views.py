@@ -125,7 +125,7 @@ class HabitViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            new_habit = Habit(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], frequency=request.data['frequency'], goal=request.data['goal'])
+            new_habit = Habit(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], days=request.data['days'], goal=request.data['goal'], good_habit=request.data['good_habit'])
             new_habit.save()
             habit_progress = HabitProgress(habit = new_habit, completion_dates = [])
             habit_progress.save()
