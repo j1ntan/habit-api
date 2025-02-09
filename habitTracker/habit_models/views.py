@@ -130,6 +130,7 @@ class HabitViewSet(ViewSet):
                 print("❌ Serializer Errors:", serializer.errors)  # Debugging
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             habit = Habit.objects.create(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], goal=request.data['goal'], good_habit=request.data['good_habit'])
+            habit_analytics = Analytics.objects.create(user=user, habit=habit, habit_completion_rate=0.0)
             selected_days= request.data['days']
             for day_id in selected_days:
                 day = Day.objects.get(id=day_id)
@@ -294,6 +295,7 @@ class HabitProgressViewSet(ViewSet):
                 "status": True,
                 "data": serializer.data
             })
+        
     @action(detail=True, methods=['get'])
     def idProgress(self, request, id):
         user = self.authorize(request)
@@ -309,6 +311,7 @@ class HabitProgressViewSet(ViewSet):
                 "status" : True,
                 "data" : serializer.data
             })
+
 
 class CalenderViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
@@ -362,6 +365,88 @@ class CalenderViewSet(ViewSet):
                 "data": calender
             })
             
-            
-            
-            
+class AnalyticsView(ViewSet):
+    permission_classes = [IsAuthenticated]
+    def authorize(self, request):
+        auth_header = request.headers.get("Authorization")
+        
+        if not auth_header or not auth_header.startswith("token "):
+            return 1
+        
+        token_key = auth_header.split(" ")[1]
+        
+        try:
+            token = Token.objects.get(key=token_key)
+            user = token.user
+        except Token.DoesNotExist:
+            return 2
+        else:
+            return user
+        
+    def getHabitAnalytics(self, request, habit_id):
+        user = request.user
+        habit = Habit.objects.get(id=habit_id, user=user)
+
+        analytics = Analytics.objects.filter(user=user, habit=habit).first()
+        analytics_data = AnalyticsSerializer(analytics).data if analytics else {}
+
+        return Response({
+            "completion_rates": {
+                    "weekly": analytics_data.get('weekly_completion_rate', 0),
+                    "monthly": analytics_data.get('monthly_completion_rate', 0),
+                },
+                "best_habit": analytics_data.get('best_habit', None),
+                "worst_habit": analytics_data.get('worst_habit', None),
+            }
+        )          
+
+    def count_days(habit, start_date, end_date):
+        # Ensure the dates are in datetime format
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+        count = 0
+        current_date = start_date
+
+        # Iterate through all days from start_date to end_date
+        while current_date <= end_date:
+            if (current_date.weekday()+1) in habit.days:  # 0 represents Monday
+                count += 1
+        current_date += timedelta(days=1)
+
+        return count
+
+    @action(detail=False, methods=['get'])
+    def getAnalyticsData(self, request):
+        user = self.authorize(request)
+        if user == 1:
+            return Response({"error": "Invalid or missing Authorization header"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif user == 2:
+            return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            all_habits = Habit.objects.filter(user=user)
+            for habit in all_habits:
+                N = self.count_days(habit, habit.start_date, habit.end_date)
+                n = len(HabitProgress.objects.get(user=user, habit=habit).completion_dates)
+                habit_analytics = Analytics.objects.filter(user=user, habit=habit)
+                habit_analytics.habit_completion_rate = n/N*100
+                habit.analytics.save()
+
+            all_habit_analytics = Analytics.objects.filter(user=user)
+            serializer = AnalyticsSerializer(all_habit_analytics, many=True)
+
+            best_habit = None
+            best_completion_rate = 0.0
+            for habit_analytics in all_habit_analytics:
+                if habit_analytics.habit_completion_rate >= best_completion_rate:
+                    best_habit = habit_analytics.habit.habit_name
+                    best_completion_rate = habit_analytics.habit_completion_rate
+
+            return Response({
+                    "habit_completion_rates": serializer.data,
+                    "best_habit": best_habit,
+                }
+            ) 
+  

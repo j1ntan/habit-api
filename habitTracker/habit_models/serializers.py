@@ -21,3 +21,8 @@ class StreakSerializer(serializers.ModelSerializer):
     class Meta:
         model = Streak
         fields = '__all__'
+
+class AnalyticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Analytics
+        fields = '__all__'

@@ -30,11 +30,8 @@ class Streak(models.Model):
 class Analytics(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     habit = models.ForeignKey(Habit, on_delete = models.CASCADE)
-    weekly_completion_rate = models.FloatField(default = 0)
-    monthly_completion_rate = models.FloatField(default = 0)
-    best_habit = models.ForeignKey(Habit, null = True, blank = True, on_delete = models.SET_NULL, related_name = "best_habit_analytics")
-    worst_habit = models.ForeignKey(Habit, null = True, blank = True, on_delete = models.SET_NULL, related_name = "worst_habit_analytics")
-
+    habit_completion_rate = models.FloatField(default = 0)
+   
 class Calender(models.Model):
     habit = models.ForeignKey(Habit, on_delete = models.CASCADE, null=True, blank=True)
     date = models.DateField()
