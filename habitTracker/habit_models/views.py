@@ -125,10 +125,6 @@ class HabitViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            serializer = HabitSerializer(data=request.data)
-            if not serializer.is_valid():
-                print("❌ Serializer Errors:", serializer.errors)  # Debugging
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             habit = Habit.objects.create(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], goal=request.data['goal'], good_habit=request.data['good_habit'])
             selected_days= request.data['days']
             for day_id in selected_days:
