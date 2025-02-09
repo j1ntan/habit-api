@@ -351,13 +351,16 @@ class CalenderViewSet(ViewSet):
                 habits = Habit.objects.filter(user=user, days__name=date.strftime("%A"))
                 habit_data = []
                 for habit in habits:
-                    habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
-                    habit_data.append({
-                        "habit_id": habit.id,
-                        "habit_name": habit.habit_name,
-                        "completed": date in habit_progress.completion_dates,
-                        "goal": habit.goal
-                    })                
+                    start_date_obj = datetime.strptime(habit.start_date, "%Y-%m-%d").date()
+                    end_date_obj = datetime.strptime(habit.end_date, "%Y-%m-%d").date()
+                    if (start_date_obj <= date and date <= end_date_obj):
+                        habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
+                        habit_data.append({
+                            "habit_id": habit.id,
+                            "habit_name": habit.habit_name,
+                            "completed": date in habit_progress.completion_dates,
+                            "goal": habit.goal
+                        })                
                 calender.append({
                     "date": date.strftime('%Y-%m-%d'),
                     "habits": habit_data
