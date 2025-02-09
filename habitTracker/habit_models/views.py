@@ -351,8 +351,8 @@ class CalenderViewSet(ViewSet):
                 habits = Habit.objects.filter(user=user, days__name=date.strftime("%A"))
                 habit_data = []
                 for habit in habits:
-                    start_date_obj = datetime.strptime(habit.start_date, "%Y-%m-%d").date()
-                    end_date_obj = datetime.strptime(habit.end_date, "%Y-%m-%d").date()
+                    start_date_obj = datetime.strptime(str(habit.start_date), "%Y-%m-%d").date()
+                    end_date_obj = datetime.strptime(str(habit.end_date), "%Y-%m-%d").date()
                     if (start_date_obj <= date and date <= end_date_obj):
                         habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
                         habit_data.append({
