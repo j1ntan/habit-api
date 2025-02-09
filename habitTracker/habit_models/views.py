@@ -136,6 +136,7 @@ class HabitViewSet(ViewSet):
                 habit.days.add(day)
                 habit.save()
             serializer = HabitSerializer(habit)
+            HabitProgress.objects.create(habit=habit)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     @action(detail=True, methods=['get'])
     def fetchById(self, request, id):
