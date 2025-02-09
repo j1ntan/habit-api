@@ -329,7 +329,7 @@ class CalenderViewSet(ViewSet):
         else:
             return user
     
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['post'])
     def showCalender(self, request):
         user = self.authorize(request)
         if user == 1:
