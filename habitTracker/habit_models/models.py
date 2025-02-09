@@ -41,3 +41,5 @@ def create_days():
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     for day in days:
         Day.objects.get_or_create(name=day)
+    for day in Day.objects.all():
+        print(day.name)

@@ -237,7 +237,7 @@ class HabitProgressViewSet(ViewSet):
                 })
             else:
                 habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
-                if request.data['completed']:
+                if request.data['completed'] == "True":
                     date = request.data['date'] # date format: yyyy-mm-dd
                     date_obj = datetime.strptime(date, "%Y-%m-%d").date()
 
