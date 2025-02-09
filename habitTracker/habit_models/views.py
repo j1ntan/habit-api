@@ -367,7 +367,7 @@ class CalenderViewSet(ViewSet):
                 "data": calender
             })
             
-class AnalyticsView(ViewSet):
+class AnalyticsViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     def authorize(self, request):
         auth_header = request.headers.get("Authorization")
