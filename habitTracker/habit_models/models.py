@@ -19,7 +19,7 @@ class Habit(models.Model):
 
 class HabitProgress(models.Model):
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name="progress_track")
-    completion_dates = models.JSONField(default=dict)
+    completion_dates = models.JSONField(default=list)
 
 class Streak(models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)

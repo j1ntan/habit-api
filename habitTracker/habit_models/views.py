@@ -125,10 +125,6 @@ class HabitViewSet(ViewSet):
         elif user == 2:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            serializer = HabitSerializer(data=request.data)
-            if not serializer.is_valid():
-                print("❌ Serializer Errors:", serializer.errors)  # Debugging
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             habit = Habit.objects.create(user=user, habit_name=request.data['name'], description=request.data['description'], start_date=request.data['start_date'], end_date=request.data['end_date'], goal=request.data['goal'], good_habit=request.data['good_habit'])
             habit_analytics = Analytics.objects.create(user=user, habit=habit, habit_completion_rate=0.0)
             selected_days= request.data['days']
@@ -137,6 +133,7 @@ class HabitViewSet(ViewSet):
                 habit.days.add(day)
                 habit.save()
             serializer = HabitSerializer(habit)
+            HabitProgress.objects.create(habit=habit)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     @action(detail=True, methods=['get'])
     def fetchById(self, request, id):
@@ -239,13 +236,13 @@ class HabitProgressViewSet(ViewSet):
                     "message": "Habit not found for the given user."
                 })
             else:
-                habit_progress = HabitProgress.objects.get_or_create(habit=habit)
-                habit_progress.completed = request.data['completed']
-                if habit_progress.completed:
+                habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
+                if request.data['completed']:
                     date = request.data['date'] # date format: yyyy-mm-dd
+                    date_obj = datetime.strptime(date, "%Y-%m-%d").date()
 
                     # But what if the habit ends before the date? Or if it starts after start_date?
-                    if not (habit.start_date <= date and date <= habit.end_date):
+                    if not (habit.start_date <= date_obj and date_obj <= habit.end_date):
                         return Response({
                             "status": False,
                             "message": "Date is not within the habit's start and end date."
@@ -253,19 +250,23 @@ class HabitProgressViewSet(ViewSet):
                     if not date in habit_progress.completion_dates:
                         habit_progress.completion_dates.append(date)
                         habit_progress.save()
+                else:
+                    if request.data['date'] in habit_progress.completion_dates:
+                        habit_progress.completion_dates.remove(request.data['date'])
+                        habit_progress.save()
 
                 # Update streak.
-                streak = Streak.objects.get(user = user, habit= habit)
+                streak = Streak.objects.get_or_create(user = user, habit= habit)[0]
                 last_completed_before_update = streak.last_completed
 
                 # Update last_completed date only if the supplied date is later than the date stored in it.
-                if request.data['date'] > last_completed_before_update:
+                if datetime.strptime(request.data['date'], "%Y-%m-%d").date() > last_completed_before_update:
                     streak.last_completed = request.data['date']
                     streak.save()
                 
-                if habit_progress.completed:
+                if request.data['completed']:
                     supplied_date = datetime.strptime(request.data['date'], "%Y-%m-%d")
-                    last_completed = datetime.strptime(streak.last_completed, "%Y-%m-%d")
+                    last_completed = datetime.strptime(str(streak.last_completed), "%Y-%m-%d")
                     if last_completed + timedelta(days=1) == supplied_date:
                         streak.streak_count += 1
                     else:
@@ -331,7 +332,7 @@ class CalenderViewSet(ViewSet):
         else:
             return user
     
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['post'])
     def showCalender(self, request):
         user = self.authorize(request)
         if user == 1:
@@ -343,21 +344,22 @@ class CalenderViewSet(ViewSet):
             start_date = request.data['start_date']
             end_date = request.data['end_date']
             calender = []
-            for i in range((end_date - start_date).days + 1):
-                date = start_date + timedelta(days=i)
+            for i in range((datetime.strptime(end_date, "%Y-%m-%d").date() - datetime.strptime(start_date, "%Y-%m-%d").date()).days + 1):
+                date = datetime.strptime(start_date, "%Y-%m-%d").date() + timedelta(days=i)
                 
                 #For this date, return all the habits that should be done on this day, and whether they were completed or not.
-                habits = Habit.objects.filter(user=user, days__contains=date.strftime("%A"))
+                habits = Habit.objects.filter(user=user, days__name=date.strftime("%A"))
                 habit_data = []
                 for habit in habits:
-                    habit_progress = HabitProgress.objects.get(habit=habit)
+                    habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
                     habit_data.append({
                         "habit_id": habit.id,
                         "habit_name": habit.habit_name,
-                        "completed": date in habit_progress.completion_dates
+                        "completed": date in habit_progress.completion_dates,
+                        "goal": habit.goal
                     })                
                 calender.append({
-                    "date": date,
+                    "date": date.strftime('%Y-%m-%d'),
                     "habits": habit_data
                 })
             return Response({

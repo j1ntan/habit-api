@@ -19,5 +19,5 @@ urlpatterns = [
     path('habits/<int:id>/track', HabitProgressViewSet.as_view({'post':'trackHabit'})),
     path('habits/progress', HabitProgressViewSet.as_view({'get':'showProgress'})),
     path('habits/<int:id>/progress', HabitProgressViewSet.as_view({'get' : 'idProgress'})),
-    path('habits/calendar', CalenderViewSet.as_view({'get':'showCalender'}))
+    path('habits/calendar', CalenderViewSet.as_view({'post':'showCalender'}))
 ]
