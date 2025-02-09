@@ -235,13 +235,13 @@ class HabitProgressViewSet(ViewSet):
                     "message": "Habit not found for the given user."
                 })
             else:
-                habit_progress = HabitProgress.objects.get_or_create(habit=habit)
-                habit_progress.completed = request.data['completed']
-                if habit_progress.completed:
+                habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
+                if request.data['completed']:
                     date = request.data['date'] # date format: yyyy-mm-dd
+                    date_obj = datetime.strptime(date, "%Y-%m-%d").date()
 
                     # But what if the habit ends before the date? Or if it starts after start_date?
-                    if not (habit.start_date <= date and date <= habit.end_date):
+                    if not (habit.start_date <= date_obj and date_obj <= habit.end_date):
                         return Response({
                             "status": False,
                             "message": "Date is not within the habit's start and end date."
@@ -249,19 +249,23 @@ class HabitProgressViewSet(ViewSet):
                     if not date in habit_progress.completion_dates:
                         habit_progress.completion_dates.append(date)
                         habit_progress.save()
+                else:
+                    if request.data['date'] in habit_progress.completion_dates:
+                        habit_progress.completion_dates.remove(request.data['date'])
+                        habit_progress.save()
 
                 # Update streak.
-                streak = Streak.objects.get(user = user, habit= habit)
+                streak = Streak.objects.get_or_create(user = user, habit= habit)[0]
                 last_completed_before_update = streak.last_completed
 
                 # Update last_completed date only if the supplied date is later than the date stored in it.
-                if request.data['date'] > last_completed_before_update:
+                if datetime.strptime(request.data['date'], "%Y-%m-%d").date() > last_completed_before_update:
                     streak.last_completed = request.data['date']
                     streak.save()
                 
-                if habit_progress.completed:
+                if request.data['completed']:
                     supplied_date = datetime.strptime(request.data['date'], "%Y-%m-%d")
-                    last_completed = datetime.strptime(streak.last_completed, "%Y-%m-%d")
+                    last_completed = datetime.strptime(str(streak.last_completed), "%Y-%m-%d")
                     if last_completed + timedelta(days=1) == supplied_date:
                         streak.streak_count += 1
                     else:
