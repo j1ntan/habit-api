@@ -341,21 +341,22 @@ class CalenderViewSet(ViewSet):
             start_date = request.data['start_date']
             end_date = request.data['end_date']
             calender = []
-            for i in range((end_date - start_date).days + 1):
-                date = start_date + timedelta(days=i)
+            for i in range((datetime.strptime(end_date, "%Y-%m-%d").date() - datetime.strptime(start_date, "%Y-%m-%d").date()).days + 1):
+                date = datetime.strptime(start_date, "%Y-%m-%d").date() + timedelta(days=i)
                 
                 #For this date, return all the habits that should be done on this day, and whether they were completed or not.
-                habits = Habit.objects.filter(user=user, days__contains=date.strftime("%A"))
+                habits = Habit.objects.filter(user=user, days__name=date.strftime("%A"))
                 habit_data = []
                 for habit in habits:
-                    habit_progress = HabitProgress.objects.get(habit=habit)
+                    habit_progress = HabitProgress.objects.get_or_create(habit=habit)[0]
                     habit_data.append({
                         "habit_id": habit.id,
                         "habit_name": habit.habit_name,
-                        "completed": date in habit_progress.completion_dates
+                        "completed": date in habit_progress.completion_dates,
+                        "goal": habit.goal
                     })                
                 calender.append({
-                    "date": date,
+                    "date": date.strftime('%Y-%m-%d'),
                     "habits": habit_data
                 })
             return Response({
