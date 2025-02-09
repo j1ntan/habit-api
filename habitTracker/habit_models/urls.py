@@ -7,6 +7,7 @@ router.register(r'auth', AuthenticationViewSet, basename='auth')
 router.register(r'habits', HabitViewSet, basename='habits')
 router.register(r'habits', HabitProgressViewSet, basename='habit-progress')
 router.register(r'habits', CalenderViewSet, basename='calender')
+router.register(r'habits', AnalyticsViewSet, basename='analytics')
 
 urlpatterns = [
     path('', include(router.urls)),
